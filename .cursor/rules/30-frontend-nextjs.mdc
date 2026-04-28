@@ -1,0 +1,28 @@
+---
+description: Frontend UI and Next.js conventions
+globs:
+  - "apps/web/**/*"
+alwaysApply: true
+---
+
+Frontend conventions for SignalGraph:
+
+- use clean, technical, investor-grade UI
+- avoid hype-heavy visuals
+- organize by pages, components, hooks/lib, and charts
+- keep business logic out of presentational components
+- use strongly typed data fetching contracts
+- every score card should support:
+  - numeric value
+  - short interpretation
+  - explanation details
+  - raw contributing features where appropriate
+
+Primary UX goals:
+- make adjusted scores intuitive
+- make score reasoning inspectable
+- show uncertainty or missing-data states clearly
+- allow comparison between raw popularity and trust-adjusted traction
+
+Do not hide the difference between raw stars and adjusted scores.
+Prefer clarity over visual novelty.

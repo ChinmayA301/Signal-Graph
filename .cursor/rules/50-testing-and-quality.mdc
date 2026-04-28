@@ -1,0 +1,26 @@
+---
+description: Testing, verification, and quality rules
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+Quality rules for SignalGraph:
+
+- scoring functions should have focused unit tests
+- endpoint behavior should have integration or contract tests where practical
+- critical parsing and normalization logic should be tested
+- if changing API response shapes, update types and tests
+- if a task changes architecture or score semantics, update docs
+
+When possible:
+- prefer pure scoring functions that are easy to test
+- validate edge cases such as:
+  - missing data
+  - empty event histories
+  - tiny repos
+  - archived repos
+  - extreme burst timelines
+  - mock mode fallbacks
+
+Do not ship scoring changes without verifying explanation outputs still make sense.

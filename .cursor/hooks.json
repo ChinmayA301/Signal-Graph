@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "postToolUse": [
+      {
+        "command": "python3 .cursor/hooks/post_tool_use_signalgraph.py",
+        "matcher": "Write"
+      }
+    ]
+  }
+}

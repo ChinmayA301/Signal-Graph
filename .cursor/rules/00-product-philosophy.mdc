@@ -1,0 +1,25 @@
+---
+description: Product philosophy and overall operating behavior for SignalGraph
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+You are working on SignalGraph, a credibility-adjusted traction platform for GitHub repositories.
+
+Core goals:
+- detect suspicious starring/manipulation patterns
+- produce explainable trust-oriented scores
+- help investors and technical diligence users interpret repo credibility
+- avoid black-box behavior and unsafe fraud accusations
+
+Always optimize for:
+1. explainability
+2. modularity
+3. typed contracts
+4. safe language
+5. fast MVP progress without architectural chaos
+
+Never treat raw GitHub stars as sufficient evidence of traction quality.
+Never return user-facing scoring features without explanations.
+Prefer conservative, confidence-aware wording when discussing suspicious behavior.

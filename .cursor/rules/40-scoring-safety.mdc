@@ -1,0 +1,32 @@
+---
+description: Scoring behavior and safe language for suspicious activity detection
+globs:
+  - "apps/api/**/*"
+  - "apps/web/**/*"
+  - "packages/scoring/**/*"
+alwaysApply: true
+---
+
+SignalGraph scoring and language policy:
+
+- do not present outputs as proof of fraud
+- use language such as:
+  - suspicious
+  - elevated risk
+  - likely inorganic
+  - coordinated pattern
+  - unexplained burst
+  - confidence limited
+- every score must be decomposable into features/subscores
+- every user-facing score must include explanation text
+- score computation should be deterministic where feasible for heuristic MVP logic
+- thresholds and weights should be configurable
+
+When creating or editing score logic:
+- add raw feature output
+- add normalized feature or subscore
+- add rationale text
+- add tests
+- avoid magic numbers without named config
+
+Do not implement a single opaque ML score unless a transparent fallback exists.

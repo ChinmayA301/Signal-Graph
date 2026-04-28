@@ -1,0 +1,2 @@
+# Optional dev tools (hooks, local scoring CI)
+pytest>=7.4,<9

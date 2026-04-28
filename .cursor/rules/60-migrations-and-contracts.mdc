@@ -1,0 +1,26 @@
+---
+description: Database migration and shared contract discipline
+globs:
+  - "apps/api/**/*"
+  - "packages/shared-types/**/*"
+alwaysApply: true
+---
+
+Schema and contract rules:
+
+- database schema changes must be migration-safe
+- use Alembic for backend DB migrations
+- keep ORM models, response schemas, and shared types aligned
+- if adding a new score field, propagate it through:
+  - persistence layer
+  - response schema
+  - shared types
+  - frontend display if relevant
+
+Before considering a schema task complete:
+1. DB schema updated
+2. migration created
+3. models updated
+4. response types updated
+5. frontend consumption checked
+6. docs updated if the change is structural

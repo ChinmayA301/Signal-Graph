@@ -1,0 +1,19 @@
+FROM node:20-bookworm
+WORKDIR /app
+
+COPY package.json ./
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/shared-types/package.json ./packages/shared-types/package.json
+
+RUN npm install --workspaces --include-workspace-root
+
+COPY packages/shared-types ./packages/shared-types
+COPY apps/web ./apps/web
+
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run types:build \
+    && npm run build -w apps/web
+
+EXPOSE 3000
+WORKDIR /app/apps/web
+CMD ["npm", "run", "start", "--", "-p", "3000"]

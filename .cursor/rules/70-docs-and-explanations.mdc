@@ -1,0 +1,27 @@
+---
+description: Documentation and explanation requirements
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+Documentation is part of the product.
+
+Update docs when:
+- architecture changes
+- scoring definitions change
+- schema changes
+- workflow changes materially
+
+User-facing explanations should:
+- be concise
+- map directly to computed features
+- avoid unsupported claims
+- distinguish evidence from inference
+- surface limitations when data is missing or confidence is low
+
+Prefer documentation that helps future agents and developers understand:
+- what a score means
+- where it is computed
+- what inputs it depends on
+- how it should be interpreted
