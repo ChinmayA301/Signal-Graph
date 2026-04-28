@@ -4,14 +4,6 @@ Credibility-adjusted traction for open-source investing: heuristic scores for ma
 
 Research grounding: ICSE 2026 work on suspected coordinated GitHub stars (StarScout / “Six Million (Suspected) Fake Stars on GitHub”) and GitHub’s own framing of stars as an approximate interest signal. Treat any automated labels as error-prone; see `PROGRESS.md` for citations and next ingestion steps (GH Archive).
 
-## Cursor / agents
-
-- [AGENTS.md](AGENTS.md) — mission, non-negotiables, and workflow for coding agents.
-- [.cursor/rules/](.cursor/rules/) — product, architecture, stack, scoring safety, tests, migrations, docs.
-- [.cursor/skills/](.cursor/skills/) — narrow workflows (scoring, endpoints, UI, migrations, peer compare).
-- [docs/SUBAGENTS.md](docs/SUBAGENTS.md) — Task-tool role prompts (backend, scoring, data, frontend, docs).
-- [.cursor/hooks.json](.cursor/hooks.json) — `postToolUse` on `Write`: scoring `pytest` + contract/doc nudges (install [requirements-dev.txt](requirements-dev.txt) so `python3 -m pytest` works for hooks).
-
 ## Monorepo layout
 
 - `apps/web` — Next.js + TypeScript UI (Recharts timelines, scorecards, peer compare)
