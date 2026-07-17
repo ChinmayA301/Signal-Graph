@@ -1,5 +1,7 @@
 # SignalGraph
 
+[![CI](https://github.com/ChinmayA301/Signal-Graph/actions/workflows/ci.yml/badge.svg)](https://github.com/ChinmayA301/Signal-Graph/actions/workflows/ci.yml)
+
 Credibility-adjusted traction for open-source investing: heuristic scores for manipulation risk, star integrity, adoption, builder quality, and durability, with explainable outputs and conservative language (“suspicious,” “elevated risk,” not accusations).
 
 Research grounding: ICSE 2026 work on suspected coordinated GitHub stars (StarScout / “Six Million (Suspected) Fake Stars on GitHub”) and GitHub’s own framing of stars as an approximate interest signal. Treat any automated labels as error-prone; see `PROGRESS.md` for citations and next ingestion steps (GH Archive).
