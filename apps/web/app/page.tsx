@@ -45,7 +45,7 @@ export default function HomePage() {
             {loading ? "Analyzing…" : "Run analysis"}
           </button>
           <span className="muted" style={{ fontSize: 13 }}>
-            Mock mode is on by default in local compose for a working demo without tokens.
+            Mock mode is on by default, so the demo runs end-to-end without any GitHub token.
           </span>
         </div>
         {error ? (

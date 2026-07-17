@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install API + scoring
+        run: |
+          pip install -e packages/scoring
+          pip install -r apps/api/requirements.txt
+          pip install "pytest>=7.4,<9"
+      - name: Scoring unit tests
+        run: python -m pytest tests -q
+        working-directory: packages/scoring
+      - name: API smoke tests (SQLite + mock mode)
+        run: python -m pytest tests -q
+        working-directory: apps/api
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - run: npm ci
+      - name: Build shared types
+        run: npm run types:build
+      - name: Build web app
+        run: npm run web:build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000

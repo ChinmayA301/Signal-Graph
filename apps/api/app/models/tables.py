@@ -3,11 +3,15 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import Any, Optional
 
-from sqlalchemy import BigInteger, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, BigInteger, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+# JSONB on Postgres (indexable, typed); plain JSON on SQLite so the app can run
+# with zero external services for local demos.
+JSONType = JSONB().with_variant(JSON(), "sqlite")
 
 
 class Repository(Base):
@@ -53,7 +57,7 @@ class User(Base):
     public_repos: Mapped[int] = mapped_column(Integer, default=0)
     public_gists: Mapped[int] = mapped_column(Integer, default=0)
     account_type: Mapped[Optional[str]] = mapped_column(String(32), nullable=True)
-    suspicious_activity_features_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    suspicious_activity_features_json: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONType, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
     star_events: Mapped[list["StarEvent"]] = relationship(back_populates="user")
@@ -105,7 +109,7 @@ class RepoScore(Base):
     builder_score: Mapped[float] = mapped_column(Float, nullable=False)
     durability_score: Mapped[float] = mapped_column(Float, nullable=False)
     credibility_adjusted_traction: Mapped[float] = mapped_column(Float, nullable=False)
-    explanation_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    explanation_json: Mapped[dict] = mapped_column(JSONType, nullable=False)
 
     repository: Mapped["Repository"] = relationship(back_populates="scores")
 

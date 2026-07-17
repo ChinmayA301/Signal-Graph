@@ -13,3 +13,7 @@ local/
 **/coverage/
 **/*.egg-info/
 **/build/
+
+# Local SQLite demo database
+*.db
+*.db-journal

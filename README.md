@@ -12,7 +12,28 @@ Research grounding: ICSE 2026 work on suspected coordinated GitHub stars (StarSc
 - `packages/shared-types` — TypeScript DTOs shared with the web client
 - `infra/docker` — Dockerfiles + API entrypoint (migrations + Uvicorn)
 
-## Local development (Docker)
+## Fastest demo — no Docker, no tokens (SQLite + mock mode)
+
+The API defaults to a local SQLite file and mock data, so the full product runs
+end-to-end on a laptop with zero external services. Two terminals:
+
+```bash
+# 1) API (creates ./signalgraph.db automatically on first run)
+cd apps/api
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ../../packages/scoring && pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8000     # → http://localhost:8000/docs
+
+# 2) Web
+cd apps/web
+npm install
+NEXT_PUBLIC_API_URL=http://localhost:8000 npm run dev   # → http://localhost:3000
+```
+
+Open `http://localhost:3000`, paste any public repo URL, and click **Run analysis**.
+Postgres and a `GITHUB_TOKEN` are only needed for live stargazer sampling (below).
+
+## Local development (Docker, Postgres)
 
 ```bash
 cd signalgraph
