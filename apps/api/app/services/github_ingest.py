@@ -35,7 +35,7 @@ async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
         "X-GitHub-Api-Version": "2022-11-28",
     }
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
         repo_resp = await client.get(f"https://api.github.com/repos/{owner}/{name}", headers=headers)
         repo_resp.raise_for_status()
         repo = repo_resp.json()
