@@ -6,6 +6,8 @@ Credibility-adjusted traction for open-source investing: heuristic scores for ma
 
 Research grounding: ICSE 2026 work on suspected coordinated GitHub stars (StarScout / “Six Million (Suspected) Fake Stars on GitHub”) and GitHub’s own framing of stars as an approximate interest signal. Treat any automated labels as error-prone; see `PROGRESS.md` for citations and next ingestion steps (GH Archive).
 
+**Project essay:** [SignalGraph: Replacing GitHub's Fake Star Economy with Credibility-Adjusted OSS Signals](https://app.chinmayarora.com/blog/signalgraph-github-fake-star-economy/)
+
 ## Monorepo layout
 
 - `apps/web` — Next.js + TypeScript UI (Recharts timelines, scorecards, peer compare)
