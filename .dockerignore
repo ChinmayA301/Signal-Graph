@@ -1,0 +1,27 @@
+# The API Dockerfile does `COPY apps/api /app/apps/api`, which would otherwise
+# pull in the local virtualenv — macOS-built binaries that are useless and
+# actively harmful inside a Linux image — and a stale SQLite database, which
+# would ship pre-seeded analyses and mask a broken schema-creation path.
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+**/*.db
+**/*.db-journal
+
+# Node/build artifacts: dependencies are installed in the image, not copied.
+**/node_modules
+**/.next
+**/dist
+**/*.tsbuildinfo
+
+# Not needed at runtime.
+.git
+.github
+docs
+local
+**/.pytest_cache
+**/.ruff_cache
+**/.env
+**/.env.*
+!**/.env.example

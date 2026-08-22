@@ -1,0 +1,30 @@
+# Render blueprint for the SignalGraph API.
+#
+# The API is deployed as a container rather than as serverless functions
+# because it depends on the local `packages/scoring` package, which lives
+# outside apps/api. The Dockerfile copies and installs it; a serverless
+# Python runtime rooted at apps/api could not see it.
+#
+# Railway and Fly.io deploy the same Dockerfile with their own config.
+services:
+  - type: web
+    name: signalgraph-api
+    runtime: docker
+    dockerfilePath: ./infra/docker/Dockerfile.api
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # Mock mode needs no secrets at all — the demo works out of the box.
+      - key: MOCK_MODE
+        value: "true"
+      # Set to the deployed frontend origin, or the browser blocks every call.
+      - key: CORS_ALLOW_ORIGINS
+        value: http://localhost:3000
+      # Optional: a GitHub token with public repo access enables live
+      # ingestion (MOCK_MODE=false). Set it in the dashboard, not here.
+      - key: GITHUB_TOKEN
+        sync: false
+    # No DATABASE_URL: the app falls back to SQLite and creates its own
+    # tables at startup. The disk is ephemeral, so analyses reset on redeploy
+    # — fine for a demo. Add a Postgres URL for durable storage.
