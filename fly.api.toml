@@ -1,0 +1,34 @@
+# Fly.io config for the SignalGraph API.
+#   fly deploy -c fly.api.toml
+#
+# Deployed as a container because the API imports packages/scoring from outside
+# apps/api — see DEPLOYMENT.md. Runs with no secrets: MOCK_MODE is on and the
+# database falls back to SQLite.
+
+app = "signalgraph-api"
+primary_region = "ord"
+
+[build]
+  dockerfile = "infra/docker/Dockerfile.api"
+
+[env]
+  MOCK_MODE = "true"
+  # Replaced with the deployed web origin once it exists:
+  #   fly secrets set CORS_ALLOW_ORIGINS=https://<web>.fly.dev -a signalgraph-api
+  CORS_ALLOW_ORIGINS = "http://localhost:3000"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  # Scale to zero when idle so an idle demo costs nothing; a cold request pays
+  # a few seconds of start-up instead.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+# Note: SQLite lives on the machine's ephemeral disk, so stored analyses reset
+# on redeploy. Fine for a demo; add Postgres for durable storage.
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

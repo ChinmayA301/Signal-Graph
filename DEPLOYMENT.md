@@ -22,7 +22,13 @@ setup, and live mode is an upgrade rather than a prerequisite.
 ## 1. Backend (container)
 
 `render.yaml` is a ready blueprint — point Render at the repo and it picks it up.
-Railway and Fly.io build the same `infra/docker/Dockerfile.api`.
+Render's free web-service tier needs no card, which makes it the lowest-friction
+option here.
+
+`fly.api.toml` deploys the same image to Fly.io (`fly deploy -c fly.api.toml`),
+configured to scale to zero when idle. Note that Fly now requires a payment
+method once the trial ends, so it is not the zero-cost path. Railway builds the
+same `infra/docker/Dockerfile.api` as well.
 
 Environment variables:
 
@@ -79,8 +85,19 @@ Environment variable:
 NEXT_PUBLIC_API_URL=https://your-api.onrender.com
 ```
 
-Deploy the backend first to get its URL, then set `CORS_ALLOW_ORIGINS` on the
-backend to the frontend URL once both exist.
+**Deploy the backend first.** `NEXT_PUBLIC_*` values are inlined into the client
+bundle at build time rather than read at runtime, so the frontend has to be built
+knowing the API's URL — changing it later means rebuilding, not just editing an
+env var. Once both exist, set `CORS_ALLOW_ORIGINS` on the backend to the frontend
+origin.
+
+If you containerise the frontend instead (`infra/docker/Dockerfile.web`), pass it
+as a build argument for the same reason:
+
+```bash
+docker build -f infra/docker/Dockerfile.web \
+  --build-arg NEXT_PUBLIC_API_URL=https://your-api.onrender.com .
+```
 
 ## Local equivalent
 
