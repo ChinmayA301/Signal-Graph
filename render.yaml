@@ -21,10 +21,12 @@ services:
       # Set to the deployed frontend origin, or the browser blocks every call.
       - key: CORS_ALLOW_ORIGINS
         value: http://localhost:3000
-      # Optional: a GitHub token with public repo access enables live
-      # ingestion (MOCK_MODE=false). Set it in the dashboard, not here.
-      - key: GITHUB_TOKEN
-        sync: false
+      # GITHUB_TOKEN is deliberately NOT declared here. Listing it with
+      # `sync: false` makes Render prompt for it during blueprint creation,
+      # which implies it is required — it is not. Mock mode needs no
+      # credentials. To enable live ingestion later, add GITHUB_TOKEN in the
+      # Render dashboard and set MOCK_MODE=false; it must be a classic PAT
+      # with public_repo scope (see DEPLOYMENT.md for why).
     # No DATABASE_URL: the app falls back to SQLite and creates its own
     # tables at startup. The disk is ephemeral, so analyses reset on redeploy
     # — fine for a demo. Add a Postgres URL for durable storage.
