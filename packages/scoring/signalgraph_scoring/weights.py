@@ -8,6 +8,10 @@ MANIPULATION_WEIGHTS = {
     "star_to_contributor_anomaly": 0.10,
     "no_activity_spike_score": 0.15,
     "co_starring_overlap_score": 0.10,
+    # Added from manufactured-virality Phase B evidence (StarScout labels, GH Archive).
+    # _weighted_sum normalises by the total, so existing components keep their relative weights.
+    "arrival_regularity_score": 0.15,
+    "co_adoption_farm_score": 0.10,
 }
 
 TRACTION_WEIGHTS = {

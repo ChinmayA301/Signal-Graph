@@ -23,6 +23,9 @@ class StarEventInput:
     account_created_at: datetime | str | None = None
     public_repos: int | None = None
     followers: int | None = None
+    # How many OTHER repositories this account starred on the same UTC day (from GH Archive
+    # WatchEvents). None when not ingested; co-adoption scoring is then inactive.
+    same_day_other_stars: int | None = None
 
 
 @dataclass(frozen=True)
@@ -141,6 +144,42 @@ def spike_without_activity(
     )
     score = clamp01((velocity / 25.0) * (1.0 / (1.0 + sqrt(activity + 1))))
     return {"recent_star_velocity": velocity, "no_activity_spike_score": score}
+
+
+def arrival_regularity(star_events: Sequence[StarEventInput]) -> dict[str, float]:
+    """Share of consecutive stars arriving under 60 seconds apart, plus inter-arrival dispersion.
+
+    Evidence (manufactured-virality Phase B, StarScout labels, 2024 hold-out): suspected
+    campaigns are dominated by sub-minute arrivals (median share 0.84 vs 0.00 for normal repos;
+    single-feature AUC 0.91), and the signal still separates campaigns that are spread over
+    more than a day. A confidence signal, not proof: scripted-looking arrival can also come
+    from an organic front-page spike, so it is weighted alongside other components.
+    """
+    times = sorted(t for t in (_parse_dt(e.starred_at) for e in star_events) if t)
+    if len(times) < 8:
+        return {"sub_minute_share": 0.0, "interarrival_cv": 0.0, "arrival_regularity_score": 0.0}
+    gaps = [(b - a).total_seconds() for a, b in zip(times, times[1:])]
+    sub_minute = sum(1 for g in gaps if g < 60) / len(gaps)
+    mean = sum(gaps) / len(gaps)
+    cv = sqrt(sum((g - mean) ** 2 for g in gaps) / len(gaps)) / mean if mean > 0 else 0.0
+    return {"sub_minute_share": sub_minute, "interarrival_cv": cv,
+            "arrival_regularity_score": clamp01(1.25 * sub_minute)}
+
+
+def co_adoption_farm_share(star_events: Sequence[StarEventInput]) -> dict[str, float]:
+    """Share of stargazers who starred 20+ other repositories on the same day.
+
+    Evidence (manufactured-virality Phase B, GH Archive via BigQuery): lockstep-flagged repos
+    have a median share of 0.96, normal repos 0.05. Inactive (score 0) when the per-star
+    `same_day_other_stars` field has not been ingested for at least 8 stars.
+    """
+    vals = [e.same_day_other_stars for e in star_events if e.same_day_other_stars is not None]
+    if len(vals) < 8:
+        return {"co_adoption_coverage": len(vals) / max(1, len(star_events)), "farm_share": 0.0,
+                "co_adoption_farm_score": 0.0}
+    share = sum(1 for v in vals if v >= 20) / len(vals)
+    return {"co_adoption_coverage": len(vals) / max(1, len(star_events)), "farm_share": share,
+            "co_adoption_farm_score": clamp01((share - 0.05) / 0.45)}
 
 
 def co_starring_overlap_score(peer_overlap_ratio: float) -> dict[str, float]:

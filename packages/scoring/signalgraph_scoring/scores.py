@@ -7,7 +7,9 @@ from typing import Any, Sequence
 from signalgraph_scoring.features import (
     RepoSnapshotInput,
     StarEventInput,
+    arrival_regularity,
     burst_concentration,
+    co_adoption_farm_share,
     co_starring_overlap_score,
     flag_suspicious_windows,
     low_activity_stargazer_share,
@@ -54,6 +56,8 @@ def compute_scores(
     spike = spike_without_activity(star_events, snapshot)
     overlap = co_starring_overlap_score(peer_overlap_ratio)
     abd = adoption_builder_durability(snapshot)
+    regularity = arrival_regularity(star_events)
+    coadopt = co_adoption_farm_share(star_events)
 
     manipulation_components = {
         "burst_score": burst["burst_score"],
@@ -63,6 +67,8 @@ def compute_scores(
         "star_to_contributor_anomaly": ratios["star_to_contributor_anomaly"],
         "no_activity_spike_score": spike["no_activity_spike_score"],
         "co_starring_overlap_score": overlap["co_starring_overlap_score"],
+        "arrival_regularity_score": regularity["arrival_regularity_score"],
+        "co_adoption_farm_score": coadopt["co_adoption_farm_score"],
     }
     manipulation_risk = 100.0 * _weighted_sum(MANIPULATION_WEIGHTS, manipulation_components)
 
@@ -73,6 +79,7 @@ def compute_scores(
         "inverse_ratios": 1.0 - (ratios["star_to_fork_anomaly"] + ratios["star_to_contributor_anomaly"]) / 2.0,
         "inverse_spike": 1.0 - spike["no_activity_spike_score"],
         "inverse_overlap": 1.0 - overlap["co_starring_overlap_score"],
+        "inverse_regularity": 1.0 - regularity["arrival_regularity_score"],
     }
     star_integrity = 100.0 * sum(integrity_components.values()) / max(1, len(integrity_components))
 
@@ -98,6 +105,8 @@ def compute_scores(
         **spike,
         **overlap,
         **abd,
+        **regularity,
+        **coadopt,
         "recent_star_velocity": spike.get("recent_star_velocity"),
         "stars_count": snapshot.stars_count,
     }
@@ -160,6 +169,10 @@ def _build_reasons(
             items.append("Stars-to-forks ratio looks unusual versus typical OSS patterns.")
         if raw_features.get("no_activity_spike_score", 0) > 0.45:
             items.append("Recent star velocity is high relative to commit/release/issue activity.")
+        if raw_features.get("sub_minute_share", 0) > 0.3:
+            items.append("Many stars arrived less than a minute apart, a pattern typical of scripted starring.")
+        if raw_features.get("farm_share", 0) > 0.3:
+            items.append("Many stargazers starred 20+ other repositories the same day (co-adoption pattern).")
         if not items:
             items.append("No strong burst or ratio anomalies detected in v1 heuristics.")
         return items[:5]
