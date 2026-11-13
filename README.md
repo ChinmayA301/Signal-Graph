@@ -48,7 +48,7 @@ docker compose up --build
 - Web: `http://localhost:3000`
 - Postgres: `localhost:5432` (`signalgraph` / `signalgraph`)
 
-`MOCK_MODE` defaults to `true` in Compose so the UI works without a GitHub token. Set `MOCK_MODE=false` and provide `GITHUB_TOKEN` for live (capped) stargazer sampling via the REST API.
+`MOCK_MODE` defaults to `true` in Compose so the UI works without a GitHub token. Set `MOCK_MODE=false` and provide `GITHUB_TOKEN` for live (capped) stargazer sampling via the GitHub API. Live mode also measures same-day co-adoption: for a sample of 60 stargazers, how many other repos each starred that UTC day (`COADOPTION_ENABLED`, `COADOPTION_MAX_USERS`; adds roughly 10-30 s per analysis). It feeds the co-adoption farm signal; see `apps/api/app/services/coadoption_ingest.py` for how it differs from the GH Archive measure. Note: since 30 June 2026 GitHub lists a repo's stargazers only to its admins and collaborators, so live stargazer sampling (and every per-stargazer signal) works only for repos your token can administer; other repos fall back to mock data. Such reports carry `ingestion_source: "mock_no_stargazer_access"` and a `data_notice` the web report shows as a warning banner; every mock-based report (demo mode, failed ingestion) carries a `data_notice` saying the scores are not from the repository.
 
 ## Local development (host, Python venv)
 

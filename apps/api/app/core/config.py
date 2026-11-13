@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     github_token: str = ""
     mock_mode: bool = True
 
+    # Same-day co-adoption (live mode only): for a sample of stargazers, count the other repos
+    # they starred that UTC day via GitHub GraphQL. GitHub spends ~1 s per user, so this adds
+    # roughly 10-30 s per analysis (capped at 30 s). Disable to skip the co-adoption signal.
+    coadoption_enabled: bool = True
+    coadoption_max_users: int = 60
+
     # Comma-separated origins allowed to call the API. Defaults to local dev;
     # a deployed frontend runs on a different origin and must be listed here or
     # the browser blocks every request.

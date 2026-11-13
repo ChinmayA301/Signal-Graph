@@ -54,6 +54,8 @@ export type AnalyzeResponse = {
   timeline: TimelineDTO;
   clusters: ClusterDTO[];
   disclaimer: string;
+  /** Set when scores are not built from this repo's real star data. Show it prominently. */
+  data_notice?: string | null;
 };
 
 export type PeerCardDTO = {

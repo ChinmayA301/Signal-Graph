@@ -66,6 +66,12 @@ export default async function RepoPage({ params, searchParams }: PageProps) {
           <RiskBadge manipulationRisk={score.manipulation_risk} />
         </div>
 
+        {data.data_notice ? (
+          <div className="notice" role="alert">
+            <strong>Not this repository&apos;s real star data.</strong> {data.data_notice}
+          </div>
+        ) : null}
+
         <div className="grid cols-3" style={{ marginTop: 16 }}>
           <Metric label="GitHub stars (raw)" value={data.repository.stars_count.toLocaleString()} />
           <Metric
