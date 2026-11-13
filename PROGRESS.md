@@ -7,6 +7,7 @@
 - [x] Scoring v1 (heuristics, modular weights, raw features + subscores)
 - [x] Mock mode for end-to-end UI without GitHub token
 - [ ] GH Archive ingestion adapter (deferred; API + mock first)
+- [x] Same-day co-adoption per stargazer via GraphQL (replaces per-analysis GH Archive scans for the co-adoption signal)
 
 ## Phase 1 (MVP demo)
 

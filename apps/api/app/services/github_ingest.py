@@ -8,6 +8,8 @@ import httpx
 
 from signalgraph_scoring.features import RepoSnapshotInput, StarEventInput
 
+from app.services.coadoption_ingest import enrich_same_day_stars
+
 _GRAPHQL_URL = "https://api.github.com/graphql"
 
 # GitHub's REST /stargazers endpoint returns 404 for repos the requesting
@@ -71,6 +73,8 @@ class LiveDataset:
     star_events: list[StarEventInput]
     github_repo_id: Optional[int]
     peer_overlap_ratio: float
+    # Same-day co-adoption coverage: sampled stargazers, resolved counts, GraphQL queries used.
+    coadoption: Optional[dict[str, Any]] = None
 
 
 def _parse_github_datetime(value: Optional[str]) -> Optional[datetime]:
@@ -130,7 +134,14 @@ async def _fetch_activity(client: httpx.AsyncClient, headers: dict, owner: str, 
         return {"commits_last_30d": 0, "prs_merged_last_30d": 0, "issues_opened_last_30d": 0, "releases_last_90d": 0}
 
 
-async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
+async def fetch_live_dataset(
+    owner: str,
+    name: str,
+    token: str,
+    *,
+    coadoption_enabled: bool = True,
+    coadoption_max_users: int = 60,
+) -> LiveDataset:
     if not token:
         raise RuntimeError("GITHUB_TOKEN is required for live ingestion")
 
@@ -140,6 +151,7 @@ async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
     }
 
     star_events: list[StarEventInput] = []
+    logins: dict[int, str] = {}
     repo: dict[str, Any] | None = None
     cursor: Optional[str] = None
     page = 1
@@ -174,6 +186,8 @@ async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
                 if not user_id:
                     continue
                 starred_at = _parse_github_datetime(edge.get("starredAt")) or datetime.now(timezone.utc)
+                if user.get("login"):
+                    logins[int(user_id)] = user["login"]
                 star_events.append(
                     StarEventInput(
                         user_id=int(user_id),
@@ -212,6 +226,17 @@ async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
 
         activity = await _fetch_activity(client, headers, owner, name)
 
+        coadoption = None
+        if coadoption_enabled and star_events:
+            co = await enrich_same_day_stars(
+                client, headers, star_events, logins,
+                int(repo["databaseId"]) if repo.get("databaseId") is not None else None,
+                max_users=coadoption_max_users,
+            )
+            star_events = co.events
+            coadoption = {"sampled": co.sampled, "resolved": co.resolved, "lower_bounds": co.lower_bounds,
+                          "queries": co.queries, "errors": co.errors}
+
         snapshot = RepoSnapshotInput(
             stars_count=int(repo.get("stargazerCount") or 0),
             forks_count=int(repo.get("forkCount") or 0),
@@ -238,4 +263,5 @@ async def fetch_live_dataset(owner: str, name: str, token: str) -> LiveDataset:
             star_events=star_events,
             github_repo_id=int(repo["databaseId"]) if repo.get("databaseId") is not None else None,
             peer_overlap_ratio=0.0,
+            coadoption=coadoption,
         )

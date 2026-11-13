@@ -293,7 +293,15 @@ async def run_analysis(db: Session, settings: Settings, owner: str, name: str, *
 
     if not settings.mock_mode and not force_mock and settings.github_token:
         try:
-            live = await fetch_live_dataset(owner, name, settings.github_token)
+            live = await fetch_live_dataset(
+                owner,
+                name,
+                settings.github_token,
+                coadoption_enabled=settings.coadoption_enabled,
+                coadoption_max_users=settings.coadoption_max_users,
+            )
+            if live.coadoption is not None:
+                logger.info("Co-adoption for %s/%s: %s", owner, name, live.coadoption)
             snapshot = live.snapshot
             star_events = live.star_events
             peer_overlap_ratio = live.peer_overlap_ratio
