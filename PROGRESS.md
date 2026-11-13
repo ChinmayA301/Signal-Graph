@@ -8,6 +8,7 @@
 - [x] Mock mode for end-to-end UI without GitHub token
 - [ ] GH Archive ingestion adapter (deferred; API + mock first)
 - [x] Same-day co-adoption per stargazer via GraphQL (replaces per-analysis GH Archive scans for the co-adoption signal)
+- [x] Reports say when they are not built from the repo's real stars (`data_notice`; GitHub's 2026-06-30 stargazer restriction detected explicitly)
 
 ## Phase 1 (MVP demo)
 

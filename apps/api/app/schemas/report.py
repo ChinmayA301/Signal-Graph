@@ -80,3 +80,6 @@ class AnalyzeResponse(BaseModel):
     timeline: TimelineDTO
     clusters: list[ClusterDTO]
     disclaimer: str
+    # Set when the scores are not built from this repo's real star data (mock, failed live
+    # ingestion, or GitHub's stargazer-list restriction). Clients should show it prominently.
+    data_notice: Optional[str] = None

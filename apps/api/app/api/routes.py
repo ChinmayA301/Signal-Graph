@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.report import AnalyzeRequest, AnalyzeResponse, CompareDTO, ScorecardDTO, TimelineDTO
-from app.services.analysis_pipeline import run_analysis
+from app.services.analysis_pipeline import data_notice_for, run_analysis
 from app.services.read_queries import (
     build_compare,
     build_timeline,
@@ -63,6 +63,7 @@ def get_repo_report(owner: str, name: str, db: Session = Depends(get_db)) -> Ana
         timeline=timeline,
         clusters=clusters,
         disclaimer=disclaimer,
+        data_notice=data_notice_for(repo.ingestion_source),
     )
 
 

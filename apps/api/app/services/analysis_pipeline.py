@@ -18,7 +18,7 @@ from app.schemas.report import (
     TimelineDTO,
     TimelinePointDTO,
 )
-from app.services.github_ingest import fetch_live_dataset
+from app.services.github_ingest import StargazersUnavailable, fetch_live_dataset
 from app.services.mock_data import build_mock_dataset
 from signalgraph_scoring.features import RepoSnapshotInput, StarEventInput
 from signalgraph_scoring.scores import ScoreBundle, compute_scores
@@ -215,6 +215,31 @@ def _persist_scores(db: Session, repo_id: int, bundle: ScoreBundle) -> None:
         )
 
 
+# Sources whose scores come from synthetic demo data, not the named repo.
+_SOURCE_NOTICES = {
+    "mock": (
+        "Demo data: these scores are computed from a synthetic star history, not from this "
+        "repository. Live ingestion is off (MOCK_MODE or force_mock)."
+    ),
+    "mock_fallback": (
+        "Live data unavailable: GitHub ingestion failed, so these scores are computed from a "
+        "synthetic star history, not from this repository."
+    ),
+    "mock_no_stargazer_access": (
+        "Stargazer data unavailable: since 30 June 2026 GitHub lists a repository's stargazers "
+        "only to its admins and collaborators, and this token is neither. The star-based "
+        "signals (arrival timing, account age, co-adoption) can't be measured, so these scores "
+        "are computed from a synthetic star history, not from this repository. Analyse a repo "
+        "you administer, or use a token with collaborator access."
+    ),
+}
+
+
+def data_notice_for(ingestion_source: str) -> Optional[str]:
+    """User-facing warning when a report is not built from the repo's real star data."""
+    return _SOURCE_NOTICES.get(ingestion_source)
+
+
 def build_analyze_response(
     *,
     owner: str,
@@ -283,6 +308,7 @@ def build_analyze_response(
         timeline=timeline,
         clusters=clusters,
         disclaimer=disclaimer,
+        data_notice=data_notice_for(ingestion_source),
     )
 
 
@@ -307,6 +333,13 @@ async def run_analysis(db: Session, settings: Settings, owner: str, name: str, *
             peer_overlap_ratio = live.peer_overlap_ratio
             github_repo_id = live.github_repo_id
             ingestion_source = "github_api"
+        except StargazersUnavailable as exc:
+            logger.warning("Stargazer list restricted, falling back to mock: %s", exc)
+            mock = build_mock_dataset(owner, name)
+            snapshot = mock.snapshot
+            star_events = mock.star_events
+            peer_overlap_ratio = mock.peer_overlap_ratio
+            ingestion_source = "mock_no_stargazer_access"
         except Exception as exc:  # noqa: BLE001
             logger.warning("Live ingestion failed, falling back to mock: %s", exc)
             mock = build_mock_dataset(owner, name)

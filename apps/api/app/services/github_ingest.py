@@ -12,13 +12,11 @@ from app.services.coadoption_ingest import enrich_same_day_stars
 
 _GRAPHQL_URL = "https://api.github.com/graphql"
 
-# GitHub's REST /stargazers endpoint returns 404 for repos the requesting
-# token doesn't own or collaborate on (confirmed against multiple tokens and
-# well-known repos as of 2026-07; REST /contributors and /forks on the same
-# repos work fine, so this is endpoint-specific, not a scope problem).
-# GraphQL's stargazers connection has no such restriction and additionally
-# exposes starredAt + account createdAt in one round trip, which is exactly
-# what the manipulation-risk heuristics need.
+# Stargazer access: since 30 June 2026 GitHub lists a repo's stargazers only to its admins and
+# collaborators. For other repos REST /stargazers returns 404 and the GraphQL stargazers
+# connection comes back empty even though stargazerCount is positive. Every star-based signal
+# (arrival timing, account age, co-adoption) needs that list, so we raise
+# StargazersUnavailable rather than score an empty or substitute dataset.
 _STARGAZERS_QUERY = """
 query($owner: String!, $name: String!, $first: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -65,6 +63,17 @@ query($owner: String!, $name: String!, $since: GitTimestamp!, $prQuery: String!,
   issuesOpened: search(query: $issueQuery, type: ISSUE) { issueCount }
 }
 """
+
+
+class StargazersUnavailable(RuntimeError):
+    """The repo has stars, but GitHub won't list its stargazers to this token."""
+
+    def __init__(self, owner: str, name: str, stargazer_count: int):
+        self.stargazer_count = stargazer_count
+        super().__init__(
+            f"GitHub reports {stargazer_count} stars on {owner}/{name} but returned no stargazers. "
+            "Since 30 June 2026 GitHub lists stargazers only to a repo's admins and collaborators."
+        )
 
 
 @dataclass(frozen=True)
@@ -180,6 +189,8 @@ async def fetch_live_dataset(
                 repo = repo_data
 
             edges = repo_data["stargazers"]["edges"]
+            if page == 1 and not edges and int(repo_data.get("stargazerCount") or 0) > 0:
+                raise StargazersUnavailable(owner, name, int(repo_data["stargazerCount"]))
             for edge in edges:
                 user = edge["node"]
                 user_id = user.get("databaseId")

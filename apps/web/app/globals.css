@@ -46,6 +46,16 @@ main {
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
 }
 
+.notice {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--risk-mid);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--risk-mid) 10%, var(--panel));
+  line-height: 1.55;
+}
+
 .muted {
   color: var(--muted);
 }
